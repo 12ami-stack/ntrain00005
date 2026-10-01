@@ -845,6 +845,16 @@
             e.preventDefault(); e.stopPropagation();
             sbDrag = { axis: axis, startClient: axis === 'x' ? e.clientX : e.clientY, startOff: axis === 'x' ? viewOffX : viewOffY, ext: computeExtent(axis), trackPx: axis === 'x' ? bar.clientWidth : bar.clientHeight };
         }));
+        [['x', sbH, thumbH], ['y', sbV, thumbV]].forEach(([axis, bar, thumb]) => bar.addEventListener('mousedown', (e) => {
+            if (e.target !== bar) return; // つまみ以外（バーの背景）を押したとき：その位置につまみを移し、そのままドラッグもできる
+            e.preventDefault(); e.stopPropagation();
+            let ext = computeExtent(axis), r = bar.getBoundingClientRect(), trackPx = axis === 'x' ? bar.clientWidth : bar.clientHeight;
+            let click = axis === 'x' ? e.clientX : e.clientY, rel = click - (axis === 'x' ? r.left : r.top);
+            let len = Math.max(30, Math.min(trackPx, trackPx * ext.viewLen / ext.L)), pos = Math.max(0, Math.min(trackPx - len, rel - len / 2));
+            let off = ext.min + pos / trackPx * ext.L;
+            if (axis === 'x') viewOffX = off; else viewOffY = off;
+            sbDrag = { axis: axis, startClient: click, startOff: off, ext: ext, trackPx: trackPx };
+        }));
         canvas.addEventListener('wheel', (e) => {
             e.preventDefault();
             let k = (e.deltaMode === 1 ? 16 : 1) * viewScale;
