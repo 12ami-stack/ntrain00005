@@ -93,9 +93,10 @@
         .grp-body { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
         .color-pair { display: flex; gap: 12px; }
         .color-pair .control-row { flex: 1 1 0; }
+        .control-row .pickers { display: flex; align-items: center; gap: 6px; }
         .control-row { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: white; }
         .control-row input[type="color"] {
-            appearance: none; -webkit-appearance: none; border: none; width: 32px; height: 32px;
+            appearance: none; -webkit-appearance: none; border: none; width: 25.6px; height: 25.6px;
             border-radius: 50%; cursor: pointer; background: transparent; padding: 0;
         }
         .control-row input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
@@ -236,9 +237,8 @@
                 </div>
                 <div class="color-pair">
                     <div class="control-row"><span>背景</span><input type="color" id="bg-color-picker" value="#3b7a57"></div>
-                    <div class="control-row"><span>電車</span><input type="color" id="train-color-picker" value="#ff4757"></div>
+                    <div class="control-row"><span>電車</span><span class="pickers"><input type="color" id="train-color-picker" value="#ff4757" title="車体の色"><input type="color" id="train-stripe-picker" value="#ecf0f1" title="帯（中央の線）の色"></span></div>
                 </div>
-                <div class="control-row"><span>電車の帯（中央の線）</span><input type="color" id="train-stripe-picker" value="#ecf0f1"></div>
                 <div class="control-row">
                     <span>明度</span>
                     <input type="range" id="bg-brightness" min="0" max="100" value="50">
