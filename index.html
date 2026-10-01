@@ -238,6 +238,7 @@
                     <div class="control-row"><span>背景</span><input type="color" id="bg-color-picker" value="#3b7a57"></div>
                     <div class="control-row"><span>電車</span><input type="color" id="train-color-picker" value="#ff4757"></div>
                 </div>
+                <div class="control-row"><span>電車の帯（中央の線）</span><input type="color" id="train-stripe-picker" value="#ecf0f1"></div>
                 <div class="control-row">
                     <span>明度</span>
                     <input type="range" id="bg-brightness" min="0" max="100" value="50">
@@ -258,6 +259,7 @@
 
         let tracks = [], currentTrack = [], train = null, isDrawing = false, mode = 'left', altIdx = 0, theme = 'forest';
         let customBgColor = '#3b7a57';
+        let customTrainStripe = '#ecf0f1'; // 電車の中央の帯の色（初期は白。テーマ選択で初期色に戻る）
         let customTrainColor = '#ff4757'; // 電車の色（テーマ選択で、そのテーマの色に戻る）
         let trainSpeedMultiplier = 1.0;
         let carCount = 1; const CAR_SPACING = 50; // 車両数（1・2・3・6）と、車両の中心どうしの間隔
@@ -333,15 +335,17 @@
         const mBtns = [[bNear, 'near'], [bRand, 'rand'], [bAlt, 'alt'], [bRight, 'right'], [bLeft, 'left']];
         mBtns.forEach(([btn, m]) => btn.addEventListener('click', () => { mode = m; mBtns.forEach(([b, bm]) => b.classList.toggle('active', bm === m)); }));
 
-        tForest.addEventListener('click', () => quickOp(() => { theme = 'forest'; customBgColor = themes.forest.bg; bgColorPicker.value = customBgColor; customTrainColor = themes.forest.train; document.getElementById('train-color-picker').value = customTrainColor; tForest.classList.add('active'); tNeon.classList.remove('active'); tClassic.classList.remove('active'); }));
-        tNeon.addEventListener('click', () => quickOp(() => { theme = 'neon'; customBgColor = themes.neon.bg; bgColorPicker.value = customBgColor; customTrainColor = themes.neon.train; document.getElementById('train-color-picker').value = customTrainColor; tNeon.classList.add('active'); tForest.classList.remove('active'); tClassic.classList.remove('active'); }));
-        tClassic.addEventListener('click', () => quickOp(() => { theme = 'classic'; customBgColor = themes.classic.bg; bgColorPicker.value = customBgColor; customTrainColor = themes.classic.train; document.getElementById('train-color-picker').value = customTrainColor; tClassic.classList.add('active'); tForest.classList.remove('active'); tNeon.classList.remove('active'); }));
+        tForest.addEventListener('click', () => quickOp(() => { theme = 'forest'; customBgColor = themes.forest.bg; bgColorPicker.value = customBgColor; customTrainColor = themes.forest.train; document.getElementById('train-color-picker').value = customTrainColor; customTrainStripe = '#ecf0f1'; document.getElementById('train-stripe-picker').value = customTrainStripe; tForest.classList.add('active'); tNeon.classList.remove('active'); tClassic.classList.remove('active'); }));
+        tNeon.addEventListener('click', () => quickOp(() => { theme = 'neon'; customBgColor = themes.neon.bg; bgColorPicker.value = customBgColor; customTrainColor = themes.neon.train; document.getElementById('train-color-picker').value = customTrainColor; customTrainStripe = '#ecf0f1'; document.getElementById('train-stripe-picker').value = customTrainStripe; tNeon.classList.add('active'); tForest.classList.remove('active'); tClassic.classList.remove('active'); }));
+        tClassic.addEventListener('click', () => quickOp(() => { theme = 'classic'; customBgColor = themes.classic.bg; bgColorPicker.value = customBgColor; customTrainColor = themes.classic.train; document.getElementById('train-color-picker').value = customTrainColor; customTrainStripe = '#ecf0f1'; document.getElementById('train-stripe-picker').value = customTrainStripe; tClassic.classList.add('active'); tForest.classList.remove('active'); tNeon.classList.remove('active'); }));
 
         bgColorPicker.addEventListener('input', (e) => { uiOpStart(); customBgColor = e.target.value; });
         bgColorPicker.addEventListener('change', () => uiOpEnd());
         bgBrightness.addEventListener('input', () => uiOpStart()); bgBrightness.addEventListener('change', () => uiOpEnd());
         document.getElementById('train-color-picker').addEventListener('input', (e) => { uiOpStart(); customTrainColor = e.target.value; });
         document.getElementById('train-color-picker').addEventListener('change', () => uiOpEnd());
+        document.getElementById('train-stripe-picker').addEventListener('input', (e) => { uiOpStart(); customTrainStripe = e.target.value; });
+        document.getElementById('train-stripe-picker').addEventListener('change', () => uiOpEnd());
 
         const guidePanel = document.getElementById('instructions'), guideShowBtn = document.getElementById('guide-show-btn');
         document.getElementById('guide-hide-btn').addEventListener('click', () => { guidePanel.style.display = 'none'; guideShowBtn.style.display = 'block'; });
@@ -659,7 +663,7 @@
         const makeSnap = () => ({
             tracks: tracks.map(t => t.slice()), structures: structures.map(o => ({ ...o })), lakes: lakes.map(l => ({ col: l.col, kind: l.kind, pts: l.pts.slice() })),
             train: train ? { ti: tracks.indexOf(train.track), idx: train.idx, dir: train.dir, t: train.t } : null,
-            ui: { theme: theme, bg: customBgColor, bright: bgBrightness.value, trainColor: customTrainColor, stCol: { ...structureColorIdx } } // 色の設定（テーマ・背景色・明るさ・電車の色・ストラクチャ／湖／山の色）
+            ui: { theme: theme, bg: customBgColor, bright: bgBrightness.value, trainColor: customTrainColor, trainStripe: customTrainStripe, stCol: { ...structureColorIdx } } // 色の設定（テーマ・背景色・明るさ・電車の色・ストラクチャ／湖／山の色）
         });
         const snapSig = (sn) => JSON.stringify([sn.ui, sn.tracks.map(t => t.map(p => [p.x, p.y])), sn.structures.map(o => [o.type, o.x, o.y, o.rot, o.col]), sn.lakes.map(l => [l.col, l.kind, l.pts.map(p => [p.x, p.y])])]);
         const updateUndoUI = () => { undoBtn.disabled = !history.length; redoBtn.disabled = !future.length; };
@@ -680,8 +684,8 @@
             tracks = sn.tracks.map(t => t.slice()); structures = sn.structures.map(o => ({ ...o })); lakes = sn.lakes.map(l => ({ col: l.col, kind: l.kind, pts: l.pts.slice() }));
             isDrawing = false; isErasing = false; isPlacing = false; isLakeDrawing = false; currentLake = null; currentTrack = null; pendingOp = null; uiPending = null;
             if (sn.ui) { // 色の設定を戻す
-                theme = sn.ui.theme; customBgColor = sn.ui.bg; bgBrightness.value = sn.ui.bright; customTrainColor = sn.ui.trainColor; Object.assign(structureColorIdx, sn.ui.stCol);
-                bgColorPicker.value = customBgColor; document.getElementById('train-color-picker').value = customTrainColor;
+                theme = sn.ui.theme; customBgColor = sn.ui.bg; bgBrightness.value = sn.ui.bright; customTrainColor = sn.ui.trainColor; customTrainStripe = sn.ui.trainStripe || '#ecf0f1'; Object.assign(structureColorIdx, sn.ui.stCol);
+                bgColorPicker.value = customBgColor; document.getElementById('train-color-picker').value = customTrainColor; document.getElementById('train-stripe-picker').value = customTrainStripe;
                 tForest.classList.toggle('active', theme === 'forest'); tNeon.classList.toggle('active', theme === 'neon'); tClassic.classList.toggle('active', theme === 'classic');
                 updateStructureUI();
             }
@@ -709,7 +713,7 @@
             angle: currentAngle,
             settings: {
                 speed: trainSpeedMultiplier, cars: carCount, junction: junctionSpeedMultiplier, realPoint: realPointEnabled,
-                mode: mode, theme: theme, bgColor: customBgColor, trainColor: customTrainColor, bgBright: parseFloat(bgBrightness.value),
+                mode: mode, theme: theme, bgColor: customBgColor, trainColor: customTrainColor, trainStripe: customTrainStripe, bgBright: parseFloat(bgBrightness.value),
                 drawMode: drawMode, viewScale: viewScale, viewOffX: viewOffX, viewOffY: viewOffY, camera: camMode
             }
         });
@@ -766,6 +770,8 @@
             bgColorPicker.value = customBgColor;
             customTrainColor = (typeof st.trainColor === 'string' && /^#[0-9a-fA-F]{6}$/.test(st.trainColor)) ? st.trainColor : themes[theme].train;
             document.getElementById('train-color-picker').value = customTrainColor;
+            customTrainStripe = (typeof st.trainStripe === 'string' && /^#[0-9a-fA-F]{6}$/.test(st.trainStripe)) ? st.trainStripe : '#ecf0f1';
+            document.getElementById('train-stripe-picker').value = customTrainStripe;
             dBtns.forEach(([b, bm]) => b.classList.toggle('active', bm === drawMode));
             vBtns.forEach(([b, bv]) => b.classList.toggle('active', bv === viewScale));
         };
@@ -1023,7 +1029,7 @@
         const drawCar = (x, y, angle, lights) => { // lights: 1=前にライト／-1=後ろにライト／0=なし
             ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
             ctx.fillStyle = customTrainColor; ctx.fillRect(-22, -10, 44, 20);
-            ctx.fillStyle = '#ecf0f1'; ctx.fillRect(-18, -2, 36, 4);
+            ctx.fillStyle = customTrainStripe; ctx.fillRect(-18, -2, 36, 4);
             ctx.fillStyle = '#2c3e50'; ctx.fillRect(10, -7, 6, 5); ctx.fillRect(10, 2, 6, 5); ctx.fillRect(-6, -7, 12, 5); ctx.fillRect(-6, 2, 12, 5);
             ctx.fillStyle = '#f1c40f';
             if (lights === 1) { ctx.fillRect(20, -8, 3, 4); ctx.fillRect(20, 4, 3, 4); }
